@@ -61,9 +61,9 @@ const getStatusBadgeColor = (status: string): string => {
 // Popup content component using Mantine
 function PopupContent({ machine, onMoreDetail }: { machine: PennyMachine; onMoreDetail: () => void }) {
   return (
-    <Box style={{ minWidth: 260, padding: '16px 4px 4px 4px' }}>
+    <Box miw={260} p="16px 4px 4px 4px">
       <Group justify="space-between" align="flex-start" gap="xs" mb="xs">
-        <Stack gap={2} style={{ flex: 1 }}>
+        <Stack gap={2} flex={1}>
           <Text fw={600} size="sm" c="dark">
             {machine.name}
           </Text>
@@ -486,18 +486,18 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
   }, [filteredMachines, mapLoaded, showPopup]);
 
   return (
-    <Box style={{ width: '100%', height: '100vh', position: 'relative' }}>
+    <Box w="100%" h="100vh" pos="relative">
       <div ref={mapContainer} style={{ width: '100%', height: '100%', backgroundColor: '#004177' }} />
 
       <Group pos="absolute" bottom={12} left={12} gap={8} align="center">
         <Box
+          bg="white"
+          p="12px 16px"
+          bdrs={8}
+          fz={12}
+          color="#666"
           style={{
-            background: '#ffffff',
-            padding: '12px 16px',
-            borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
-            fontSize: 12,
-            color: '#666',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
             zIndex: 1,
           }}
         >
@@ -505,24 +505,14 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
             Showing {filteredMachines.length} of {machines.length} machines
           </Text>
         </Box>
-        {/* A Help button with a question mark icon that opens a modal */}
-        <Box
-          style={{
-            background: '#ffffff',
-            borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
-            color: '#666',
-            zIndex: 1,
-          }}
+        <ActionIcon
+          variant="filled"
+          bdrs={8}
+          size={40.797}
+          onClick={() => setHelpModalOpened(true)}
         >
-          <ActionIcon
-            variant="transparent"
-            size={40.797}
-            onClick={() => setHelpModalOpened(true)}
-          >
-            <QuestionIcon size={24} color="black" />
-          </ActionIcon>
-        </Box>
+          <QuestionIcon size={24} />
+        </ActionIcon>
       </Group>
 
       {/* Help Modal */}
@@ -578,7 +568,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
           </Stack>
 
           <Text size="xs" c="dimmed" mt="sm">
-            Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. If you have updates or corrections, please contact the site administrator.
+            Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. If you have updates or corrections, please contact the site owner. Made with ❤️ by <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">Adam Teo</Anchor>.
           </Text>
         </Stack>
       </Modal>
