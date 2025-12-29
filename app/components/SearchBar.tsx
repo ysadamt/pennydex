@@ -83,7 +83,7 @@ export default function SearchBar({
         {/* Search Input */}
         <TextInput
           placeholder="Filter by name or address..."
-          leftSection={<MagnifyingGlassIcon size={18} />}
+          leftSection={<MagnifyingGlassIcon weight="bold" size={18} />}
           value={searchTerm}
           onChange={(e) => onSearchChange(e.currentTarget.value)}
           radius="md"
@@ -108,14 +108,14 @@ export default function SearchBar({
                 <Button
                   variant="light"
                   size="xs"
-                  rightSection={<FunnelSimpleIcon size={13} />}
+                  rightSection={<FunnelSimpleIcon weight="bold" size={13} />}
                 >
                   Options
                 </Button>
               </Menu.Target>
               <Menu.Dropdown style={{ zIndex: 1000 }}>
                 <Menu.Item
-                  leftSection={<ChecksIcon size={18} />}
+                  leftSection={<ChecksIcon weight="bold" size={18} />}
                   onClick={() => {
                     onStatusChange(STATUS_OPTIONS.map((opt) => opt.value));
                   }}
@@ -123,7 +123,7 @@ export default function SearchBar({
                   Select All
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<XCircleIcon size={18} />}
+                  leftSection={<XCircleIcon weight="bold" size={18} />}
                   onClick={() => {
                     onStatusChange([]);
                   }}
