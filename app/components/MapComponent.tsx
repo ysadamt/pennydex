@@ -5,10 +5,11 @@ import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Box, Text, Badge, Group, Stack, MantineProvider, Button, Modal, ScrollArea, Paper } from '@mantine/core';
+import { Box, Text, Badge, Group, Stack, MantineProvider, Button, Modal, ScrollArea, Paper, ActionIcon, Anchor } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
 import DOMPurify from 'dompurify';
 import parse from 'html-react-parser';
+import { QuestionIcon } from '@phosphor-icons/react/dist/ssr';
 
 // SVG icons from Phosphor (regular weight) - encoded for use in MapLibre
 const COIN_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256"><path d="M209.37,60.27C188.08,49.62,160,44,128,44S67.92,49.62,46.63,60.27C24.62,71.27,12,87.21,12,104v48c0,16.79,12.62,32.73,34.63,43.73C67.92,206.38,96.05,212,128,212s60.08-5.62,81.37-16.27c22-11,34.63-26.94,34.63-43.73V104C244,87.21,231.38,71.27,209.37,60.27Zm-152,21.46C75.08,72.88,100.16,68,128,68s52.92,4.88,70.63,13.73C211.81,88.32,220,96.86,220,104s-8.19,15.68-21.37,22.27C180.92,135.12,155.84,140,128,140s-52.92-4.88-70.63-13.73C44.19,119.68,36,111.14,36,104S44.19,88.32,57.37,81.73ZM180,181.38a180.38,180.38,0,0,1-40,6.3v-24a210.39,210.39,0,0,0,40-5.51ZM76,158.22a210.39,210.39,0,0,0,40,5.51v24a180.38,180.38,0,0,1-40-6.3ZM36,152V141.54a94.54,94.54,0,0,0,10.63,6.19c1.74.87,3.54,1.7,5.37,2.5V171.3C42,165.24,36,158.11,36,152Zm168,19.3V150.23c1.83-.8,3.63-1.63,5.37-2.5A94.54,94.54,0,0,0,220,141.54V152C220,158.11,214,165.24,204,171.3Z"></path></svg>`;
@@ -114,6 +115,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
   const [mapLoaded, setMapLoaded] = useState(false);
   const [modalOpened, setModalOpened] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState<PennyMachine | null>(null);
+  const [helpModalOpened, setHelpModalOpened] = useState(false);
 
   // Handle opening the detail modal
   const handleMoreDetail = useCallback((machine: PennyMachine) => {
@@ -487,24 +489,99 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
     <Box style={{ width: '100%', height: '100vh', position: 'relative' }}>
       <div ref={mapContainer} style={{ width: '100%', height: '100%', backgroundColor: '#004177' }} />
 
-      <Box
-        style={{
-          position: 'absolute',
-          bottom: 12,
-          left: 12,
-          background: '#ffffff',
-          padding: '12px 16px',
-          borderRadius: 8,
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
-          fontSize: 12,
-          color: '#666',
-          zIndex: 1,
+      <Group pos="absolute" bottom={12} left={12} gap={8} align="center">
+        <Box
+          style={{
+            background: '#ffffff',
+            padding: '12px 16px',
+            borderRadius: 8,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+            fontSize: 12,
+            color: '#666',
+            zIndex: 1,
+          }}
+        >
+          <Text size="xs" fw={500}>
+            Showing {filteredMachines.length} of {machines.length} machines
+          </Text>
+        </Box>
+        {/* A Help button with a question mark icon that opens a modal */}
+        <Box
+          style={{
+            background: '#ffffff',
+            borderRadius: 8,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+            color: '#666',
+            zIndex: 1,
+          }}
+        >
+          <ActionIcon
+            variant="transparent"
+            size={40.797}
+            onClick={() => setHelpModalOpened(true)}
+          >
+            <QuestionIcon size={24} color="black" />
+          </ActionIcon>
+        </Box>
+      </Group>
+
+      {/* Help Modal */}
+      <Modal
+        opened={helpModalOpened}
+        onClose={() => setHelpModalOpened(false)}
+        title="How to Use PennyDex"
+        size="md"
+        styles={{
+          title: {
+            fontWeight: 600,
+            fontSize: '1.5rem',
+            paddingTop: '8px',
+          },
         }}
       >
-        <Text size="xs" fw={500}>
-          Showing {filteredMachines.length} of {machines.length} machines
-        </Text>
-      </Box>
+        <Stack gap="md">
+          <Text size="sm">
+            Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! Here's how to make the most of PennyDex.
+          </Text>
+
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>Search</Text>
+            <Text size="sm" c="dimmed">
+              Use the search bar to filter machines by name or address. Start typing to see matching results.
+            </Text>
+          </Stack>
+
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>Status Filters</Text>
+            <Text size="sm" c="dimmed">
+              Use the status filters to show machines by their current status:
+            </Text>
+            <Group gap="xs">
+              <Badge color="green" variant="light" size="sm">Available</Badge>
+              <Text size="xs" c="dimmed">Machine is working</Text>
+            </Group>
+            <Group gap="xs">
+              <Badge color="yellow" variant="light" size="sm">Out of Order</Badge>
+              <Text size="xs" c="dimmed">Machine needs repair</Text>
+            </Group>
+            <Group gap="xs">
+              <Badge color="red" variant="light" size="sm">Gone</Badge>
+              <Text size="xs" c="dimmed">Machine has been removed</Text>
+            </Group>
+          </Stack>
+
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>Map Navigation</Text>
+            <Text size="sm" c="dimmed">
+              Click on clusters to zoom in and see individual machines. Click on a machine marker to view its details, including available designs and images.
+            </Text>
+          </Stack>
+
+          <Text size="xs" c="dimmed" mt="sm">
+            Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. If you have updates or corrections, please contact the site administrator.
+          </Text>
+        </Stack>
+      </Modal>
 
       {/* Detail Modal */}
       <Modal
@@ -552,8 +629,8 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
                   className="html-content"
                   bg="#f9f9f9"
                   p="12px"
+                  fz="0.9rem"
                   style={{
-                    fontSize: '0.9rem',
                     lineHeight: 1.6,
                     borderRadius: 4,
                   }}
