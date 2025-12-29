@@ -1,26 +1,128 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: #212529;
+  font-family: "Instrument Sans", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Instrument Serif", serif;
+}
+
+/* MapLibre map styles */
+.maplibregl-map {
+  font-family: "Instrument Sans", sans-serif;
+}
+
+.maplibregl-popup-content {
+  font-family: "Instrument Sans", sans-serif;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+}
+
+.maplibregl-popup-close-button {
+  font-size: 20px;
+  color: #666;
+  padding: 4px 8px;
+}
+
+.maplibregl-popup-close-button:hover {
+  color: #333;
+  background: transparent;
+}
+
+.maplibregl-ctrl-group {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.maplibregl-ctrl-group button {
+  width: 36px;
+  height: 36px;
+}
+
+/* Cluster marker styles */
+.cluster-marker {
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Markdown content styles */
+.html-content {
+  color: #495057;
+}
+
+.html-content h1,
+.html-content h2,
+.html-content h3,
+.html-content h4,
+.html-content h5,
+.html-content h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-family: "Instrument Serif", serif;
+  color: #212529;
+}
+
+.html-content p {
+  margin-bottom: 0.75em;
+}
+
+.html-content ul,
+.html-content ol {
+  margin-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+.html-content li {
+  margin-bottom: 0.25em;
+}
+
+.html-content a {
+  color: #228be6;
+  text-decoration: none;
+}
+
+.html-content a:hover {
+  text-decoration: underline;
+}
+
+.html-content code {
+  background: #f1f3f5;
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.html-content pre {
+  background: #f1f3f5;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 0.75em;
+}
+
+.html-content blockquote {
+  border-left: 3px solid #dee2e6;
+  padding-left: 1em;
+  margin-left: 0;
+  color: #868e96;
+  font-style: italic;
 }
