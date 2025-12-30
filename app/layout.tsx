@@ -52,7 +52,28 @@ export default function RootLayout({
       <head>
         <title>PennyDex</title>
         <link rel="icon" href="/favicon.svg" />
-        <meta name="description" content="Explore penny press machines worldwide" />
+        <meta itemProp="name" content="PennyDex" />
+        <meta name="description" content="Explore penny press machines worldwide." />
+        <meta property="og:title" content="PennyDex" key="title" />
+        <meta
+          property="og:image"
+          content="https://pennydex.vercel.app/opengraph-image.jpg"
+        />
+        <meta
+          name="og:description"
+          content="Explore penny press machines worldwide."
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:image"
+          content="https://pennydex.vercel.app/opengraph-image.jpg"
+        />
+        <meta name="twitter:title" content="PennyDex" />
+        <meta name="twitter:domain" content="pennydex.vercel.app" />
+        <meta
+          name="twitter:description"
+          content="Explore penny press machines worldwide."
+        />
       </head>
       <body style={{ margin: 0, padding: 0 }}>
         {/* 3. Pass the theme object here */}
