@@ -625,9 +625,9 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
                   bg="#f9f9f9"
                   p="12px"
                   fz="0.9rem"
+                  bdrs="md"
                   style={{
                     lineHeight: 1.6,
-                    borderRadius: 4,
                   }}
                 >
                   {parse(DOMPurify.sanitize(selectedMachine.desc, { USE_PROFILES: { html: true } }))}
@@ -638,13 +638,10 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
             {/* show images */}
             {selectedMachine.images && selectedMachine.images.length > 0 && (
               <Stack gap="sm">
-                <Text size="lg" fw={500}>
-                  Images:
-                </Text>
                 <Carousel
                   withIndicators={selectedMachine.images.length > 1}
                   withControls={selectedMachine.images.length > 1}
-                  slideSize="100%"
+                  slideSize="50%"
                   slideGap={0}
                   emblaOptions={{ align: 'start', slidesToScroll: 1 }}
                   styles={{
