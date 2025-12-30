@@ -450,8 +450,6 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
         const coordinates = (feature.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
         const props = feature.properties;
 
-        console.log('Clicked machine properties:', props);
-
         const machine: PennyMachine = {
           id: props.id,
           name: props.name,
