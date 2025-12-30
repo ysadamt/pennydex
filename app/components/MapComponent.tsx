@@ -60,6 +60,15 @@ const getStatusBadgeColor = (status: string): string => {
   return 'red';
 };
 
+// Proxy image URLs through our API to avoid mixed content issues
+const getProxiedImageUrl = (url: string): string => {
+  if (!url) return '';
+  // If already HTTPS or a relative URL, return as-is
+  if (url.startsWith('https://') || url.startsWith('/')) return url;
+  // Proxy HTTP URLs through our API
+  return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+};
+
 // Popup content component using Mantine
 function PopupContent({ machine, onMoreDetail }: { machine: PennyMachine; onMoreDetail: () => void }) {
   return (
@@ -568,7 +577,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
       >
         <Stack gap="md">
           <Text size="sm">
-            Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! Here's how to make the most of PennyDex.
+            Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! As a longtime pressed penny enthusiast, I've created this tool to help you easily locate machines, check their status, and explore available designs.
           </Text>
 
           <Stack gap="xs">
@@ -584,15 +593,15 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
               Use the status filters to show machines by their current status:
             </Text>
             <Group gap="xs">
-              <Badge color="green" variant="light" size="sm">Available</Badge>
+              <Badge color="green" size="sm">Available</Badge>
               <Text size="xs" c="dimmed">Machine is working</Text>
             </Group>
             <Group gap="xs">
-              <Badge color="yellow" variant="light" size="sm">Out of Order</Badge>
+              <Badge color="yellow" size="sm">Out of Order</Badge>
               <Text size="xs" c="dimmed">Machine needs repair</Text>
             </Group>
             <Group gap="xs">
-              <Badge color="red" variant="light" size="sm">Gone</Badge>
+              <Badge color="red" size="sm">Gone</Badge>
               <Text size="xs" c="dimmed">Machine has been removed</Text>
             </Group>
           </Stack>
@@ -690,7 +699,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
                       <Paper
                         radius="md"
                         style={{
-                          backgroundImage: `url(${img.url})`,
+                          backgroundImage: `url(${getProxiedImageUrl(img.url)})`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
                           height: 250,
