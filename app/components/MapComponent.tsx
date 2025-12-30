@@ -284,6 +284,26 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
         },
       });
 
+      // Cluster shadow layer
+      map.current.addLayer({
+        id: 'clusters-shadow',
+        type: 'circle',
+        source: 'machines',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': 'rgba(0, 0, 0, 0.3)',
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            33,
+            15, 41,
+            150, 48,
+          ],
+          'circle-blur': 0.75,
+          'circle-translate': [2, 2],
+        },
+      });
+
       // Cluster circles layer
       map.current.addLayer({
         id: 'clusters',
@@ -388,6 +408,20 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
         loadIcon('arrow-icon', ARROW_UP_RIGHT_ICON_SVG),
       ]).then(() => {
         if (!map.current) return;
+
+        // Individual point shadow layer
+        map.current.addLayer({
+          id: 'unclustered-point-shadow',
+          type: 'circle',
+          source: 'machines',
+          filter: ['!', ['has', 'point_count']],
+          paint: {
+            'circle-color': 'rgba(0, 0, 0, 0.3)',
+            'circle-radius': 16,
+            'circle-blur': 0.75,
+            'circle-translate': [2, 2],
+          },
+        });
 
         // Individual point circle layer (background)
         map.current.addLayer({
