@@ -1,6 +1,7 @@
 'use client';
 
 import { MantineProvider, createTheme, MantineColorsTuple } from '@mantine/core';
+import { Analytics } from "@vercel/analytics/next"
 import "@mantine/core/styles.css";
 import '@mantine/carousel/styles.css';
 import "@fontsource/instrument-serif/400.css";
@@ -57,6 +58,7 @@ export default function RootLayout({
         {/* 3. Pass the theme object here */}
         <MantineProvider theme={theme}>
           {children}
+          <Analytics />
         </MantineProvider>
       </body>
     </html>
