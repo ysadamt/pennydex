@@ -76,7 +76,7 @@ export default function SearchBar({
                 fontFamily: "'Instrument Sans', sans-serif",
               }}
             >
-              Explore penny press machines worldwide
+              Explore penny press machines worldwide.
             </Text>
           </Stack>
         </Group>
