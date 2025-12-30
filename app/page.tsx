@@ -22,7 +22,6 @@ interface PennyMachine {
   images: PennyMachineImage[];
 }
 
-// Dynamically import MapComponent to avoid SSR issues with Leaflet
 const MapComponent = dynamic(() => import('./components/MapComponent'), {
   ssr: false,
   loading: () => (
@@ -61,7 +60,6 @@ export default function Home() {
 
   return (
     <Box style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
-      {/* Search and Filter Bar */}
       <SearchBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -69,7 +67,6 @@ export default function Home() {
         onStatusChange={setSelectedStatuses}
       />
 
-      {/* Map */}
       {isLoading ? (
         <Center style={{ width: '100%', height: '100vh' }}>
           <Stack align="center" gap="md">

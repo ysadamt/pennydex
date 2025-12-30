@@ -571,7 +571,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
           </Stack>
 
           <Text size="xs" c="dimmed" mt="sm">
-            Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. If you have updates or corrections, please contact the site owner. Made with ❤️ by <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">Adam Teo</Anchor>.
+            Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. Made with ❤️ by <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">Adam Teo</Anchor>.
           </Text>
         </Stack>
       </Modal>
