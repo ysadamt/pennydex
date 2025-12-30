@@ -41,6 +41,7 @@ export default function Home() {
     'available',
   ]);
   const [isLoading, setIsLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     const loadMachines = async () => {
@@ -60,12 +61,14 @@ export default function Home() {
 
   return (
     <Box style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
-      <SearchBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        selectedStatuses={selectedStatuses}
-        onStatusChange={setSelectedStatuses}
-      />
+      {!isLoading && mapReady && (
+        <SearchBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedStatuses={selectedStatuses}
+          onStatusChange={setSelectedStatuses}
+        />
+      )}
 
       {isLoading ? (
         <Center style={{ width: '100%', height: '100vh' }}>
@@ -79,6 +82,7 @@ export default function Home() {
           machines={machines}
           searchTerm={searchTerm}
           selectedStatuses={selectedStatuses}
+          onMapLoaded={() => setMapReady(true)}
         />
       )}
     </Box>

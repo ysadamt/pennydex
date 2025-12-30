@@ -40,6 +40,7 @@ interface MapComponentProps {
   machines: PennyMachine[];
   searchTerm: string;
   selectedStatuses: string[];
+  onMapLoaded?: () => void;
 }
 
 const getStatusColor = (status: string): string => {
@@ -120,7 +121,7 @@ function PopupContent({ machine, onMoreDetail }: { machine: PennyMachine; onMore
   );
 }
 
-export default function MapComponent({ machines, searchTerm, selectedStatuses }: MapComponentProps) {
+export default function MapComponent({ machines, searchTerm, selectedStatuses, onMapLoaded }: MapComponentProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const popup = useRef<maplibregl.Popup | null>(null);
@@ -237,6 +238,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses }:
 
     map.current.on('load', () => {
       setMapLoaded(true);
+      onMapLoaded?.();
     });
 
     return () => {
