@@ -63,6 +63,8 @@ export default function RootLayout({
           name="og:description"
           content="Explore penny press machines worldwide."
         />
+        <meta name="og:site_name" content="PennyDex" />
+        <meta name="og:url" content="https://pennydex.vercel.app" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:image"
