@@ -667,7 +667,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
                   className="html-content"
                   bg="#f9f9f9"
                   p="12px"
-                  fz="0.9rem"
+                  fz="0.85rem"
                   bdrs="md"
                   style={{
                     lineHeight: 1.6,
