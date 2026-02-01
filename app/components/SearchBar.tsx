@@ -63,7 +63,7 @@ export default function SearchBar({
               order={1}
               size="h1"
               style={{
-                fontFamily: "'Instrument Serif', serif",
+                fontFamily: "'Arial Rounded Bold', sans-serif",
                 fontWeight: 700,
               }}
             >
@@ -73,7 +73,7 @@ export default function SearchBar({
               size="xs"
               c="dimmed"
               style={{
-                fontFamily: "'Instrument Sans', sans-serif",
+                fontFamily: "'Sn Pro', sans-serif",
               }}
             >
               Explore penny press machines worldwide.

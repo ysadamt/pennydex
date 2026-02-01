@@ -4,11 +4,10 @@ import { MantineProvider, createTheme, MantineColorsTuple } from '@mantine/core'
 import { Analytics } from "@vercel/analytics/next"
 import "@mantine/core/styles.css";
 import '@mantine/carousel/styles.css';
-import "@fontsource/instrument-serif/400.css";
-import "@fontsource/instrument-sans/400.css";
-import "@fontsource/instrument-sans/500.css";
-import "@fontsource/instrument-sans/600.css";
-import "@fontsource/instrument-sans/700.css";
+import "@fontsource/sn-pro/400.css";
+import "@fontsource/sn-pro/500.css";
+import "@fontsource/sn-pro/600.css";
+import "@fontsource/sn-pro/700.css";
 import "./globals.css";
 
 // 1. Define the custom color palette (10 shades)
@@ -28,9 +27,9 @@ const pennyDexRed: MantineColorsTuple = [
 
 // 2. Create the theme object
 export const theme = createTheme({
-  fontFamily: 'Instrument Sans, sans-serif',
+  fontFamily: 'SN Pro, sans-serif',
   headings: {
-    fontFamily: 'Instrument Serif, serif',
+    fontFamily: 'Arial Rounded Bold, sans-serif',
   },
   primaryColor: 'pennyRed', // Tell Mantine to use your custom key
   colors: {

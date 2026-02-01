@@ -196,32 +196,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: [
-              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            ],
-            tileSize: 256,
-            minzoom: 1,
-            maxzoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          },
-        },
-        layers: [
-          {
-            id: 'osm-tiles-layer',
-            type: 'raster',
-            source: 'osm-tiles',
-            minzoom: 1,
-            maxzoom: 19,
-          },
-        ],
-      },
+      style: 'https://tiles.openfreemap.org/styles/bright',
       center: [-98.5795, 39.8283],
       zoom: 3,
       minZoom: 2,
@@ -372,7 +347,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
             el.textContent = pointCount >= 1000 ? `${Math.round(pointCount / 1000)}k` : String(pointCount);
             el.style.cssText = `
               color: white;
-              font-family: "Instrument Sans", sans-serif;
+              font-family: "Sn Pro", sans-serif;
               font-size: 13px;
               font-weight: 700;
               pointer-events: none;

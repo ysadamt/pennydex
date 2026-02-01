@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Arial Rounded Bold";
+  src: url("./fonts/Arial-Rounded-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -14,7 +22,7 @@ body {
 body {
   background: #ffffff;
   color: #212529;
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "SN Pro", sans-serif;
 }
 
 h1,
@@ -23,16 +31,17 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Instrument Serif", serif;
+  font-family: "Arial Rounded Bold", sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* MapLibre map styles */
 .maplibregl-map {
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Sn Pro", sans-serif;
 }
 
 .maplibregl-popup-content {
-  font-family: "Instrument Sans", sans-serif;
+  font-family: "Sn Pro", sans-serif;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   padding: 12px;
@@ -77,7 +86,8 @@ h6 {
 .html-content h6 {
   margin-top: 1em;
   margin-bottom: 0.5em;
-  font-family: "Instrument Serif", serif;
+  font-family: "Arial Rounded Bold", sans-serif;
+  letter-spacing: -0.02em;
   color: #212529;
 }
 
