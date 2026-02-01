@@ -5,10 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Box, Text, Badge, Group, Stack, MantineProvider, Button, Modal, ScrollArea, Paper, ActionIcon, Anchor } from '@mantine/core';
-import { Carousel } from '@mantine/carousel';
-import DOMPurify from 'dompurify';
-import parse from 'html-react-parser';
+import { Box, Text, Badge, Group, Stack, MantineProvider, Button, Modal, ActionIcon, Anchor } from '@mantine/core';
 import { QuestionIcon } from '@phosphor-icons/react/dist/ssr';
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { theme } from '../layout';
@@ -61,17 +58,8 @@ const getStatusBadgeColor = (status: string): string => {
   return 'red';
 };
 
-// Proxy image URLs through our API to avoid mixed content issues
-const getProxiedImageUrl = (url: string): string => {
-  if (!url) return '';
-  // If already HTTPS or a relative URL, return as-is
-  if (url.startsWith('https://') || url.startsWith('/')) return url;
-  // Proxy HTTP URLs through our API
-  return `/api/image-proxy?url=${encodeURIComponent(url)}`;
-};
-
 // Popup content component using Mantine
-function PopupContent({ machine, onMoreDetail }: { machine: PennyMachine; onMoreDetail: () => void }) {
+function PopupContent({ machine }: { machine: PennyMachine }) {
   return (
     <Box miw={260} p="16px 4px 4px 4px">
       <Group justify="space-between" align="flex-start" gap="xs" mb="xs">
@@ -103,20 +91,21 @@ function PopupContent({ machine, onMoreDetail }: { machine: PennyMachine; onMore
         </Text>
       )}
 
-      {machine.desc && (
-        <Button
-          variant="light"
-          fullWidth
-          size="xs"
-          mt="xs"
-          onClick={onMoreDetail}
-          rightSection={
-            <ArrowUpRightIcon size={14} weight="bold" />
-          }
-        >
-          More Details
-        </Button>
-      )}
+      <Button
+        component="a"
+        href={`http://locations.pennycollector.com/Details.aspx?location=${machine.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="light"
+        fullWidth
+        size="xs"
+        mt="xs"
+        rightSection={
+          <ArrowUpRightIcon size={14} weight="bold" />
+        }
+      >
+        PennyCollector.com
+      </Button>
     </Box>
   );
 }
@@ -128,16 +117,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
   const clusterMarkers = useRef<Map<number, maplibregl.Marker>>(new Map());
   const [filteredMachines, setFilteredMachines] = useState<PennyMachine[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [modalOpened, setModalOpened] = useState(false);
-  const [selectedMachine, setSelectedMachine] = useState<PennyMachine | null>(null);
   const [helpModalOpened, setHelpModalOpened] = useState(false);
-
-  // Handle opening the detail modal
-  const handleMoreDetail = useCallback((machine: PennyMachine) => {
-    setSelectedMachine(machine);
-    setModalOpened(true);
-    popup.current?.remove();
-  }, []);
 
   // Filter machines with debounce
   useEffect(() => {
@@ -179,7 +159,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
     flushSync(() => {
       root.render(
         <MantineProvider theme={theme}>
-          <PopupContent machine={machine} onMoreDetail={() => handleMoreDetail(machine)} />
+          <PopupContent machine={machine} />
         </MantineProvider>
       );
     });
@@ -548,13 +528,12 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
           title: {
             fontWeight: 600,
             fontSize: '1.5rem',
-            paddingTop: '8px',
           },
         }}
       >
         <Stack gap="md">
           <Text size="sm">
-            Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! As a longtime pressed penny enthusiast, I've created this tool to help you easily locate machines, check their status, and explore available designs.
+            Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! As a longtime pressed penny enthusiast, I've created this tool that visualizes all the penny press locations from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>.
           </Text>
 
           <Stack gap="xs">
@@ -586,7 +565,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
           <Stack gap="xs">
             <Text size="sm" fw={500}>Map Navigation</Text>
             <Text size="sm" c="dimmed">
-              Click on clusters to zoom in and see individual machines. Click on a machine marker to view its details, including available designs and images.
+              Click on clusters to zoom in and see individual machines. Click on a machine marker to view its details, including a link for more information.
             </Text>
           </Stack>
 
@@ -594,118 +573,6 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
             Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. Made with ❤️ by <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">Adam Teo</Anchor>.
           </Text>
         </Stack>
-      </Modal>
-
-      {/* Detail Modal */}
-      <Modal
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
-        title={selectedMachine?.name || 'Machine Details'}
-        size="lg"
-        styles={{
-          title: {
-            fontWeight: 600,
-            fontSize: '1.75rem',
-            paddingTop: '8px',
-          },
-        }}
-      >
-        {selectedMachine && (
-          <Stack gap="md">
-            <Group justify="space-between" align="flex-start">
-              <Stack gap={4} maw="70%">
-                <Text size="sm" c="dimmed">
-                  {selectedMachine.address}
-                </Text>
-                <Group gap="xs">
-                  <Text size="sm" fw={500} mr={-6}>
-                    Designs:
-                  </Text>
-                  <Badge variant="outline" color="gray" size="sm">
-                    {selectedMachine.designs}
-                  </Badge>
-                </Group>
-                {selectedMachine.updated && (
-                  <Text size="xs" c="dimmed">
-                    Last updated: {selectedMachine.updated}
-                  </Text>
-                )}
-              </Stack>
-              <Badge color={getStatusBadgeColor(selectedMachine.status)} variant="light">
-                {getStatusLabel(selectedMachine.status)}
-              </Badge>
-            </Group>
-
-            {selectedMachine.desc && (
-              <ScrollArea.Autosize mah={400}>
-                <Box
-                  className="html-content"
-                  bg="#f9f9f9"
-                  p="12px"
-                  fz="0.85rem"
-                  bdrs="md"
-                  style={{
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {parse(DOMPurify.sanitize(selectedMachine.desc, { USE_PROFILES: { html: true } }))}
-                </Box>
-              </ScrollArea.Autosize>
-            )}
-
-            {/* show images */}
-            {selectedMachine.images && selectedMachine.images.length > 0 && (
-              <Stack gap="sm">
-                <Carousel
-                  withIndicators={selectedMachine.images.length > 1}
-                  withControls={selectedMachine.images.length > 1}
-                  slideSize="50%"
-                  slideGap={0}
-                  emblaOptions={{ align: 'start', slidesToScroll: 1 }}
-                  styles={{
-                    indicator: {
-                      backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                      '&[dataActive]': {
-                        backgroundColor: 'white',
-                      },
-                    },
-                  }}
-                >
-                  {selectedMachine.images.map((img, idx) => (
-                    <Carousel.Slide key={idx}>
-                      <Paper
-                        radius="md"
-                        style={{
-                          backgroundImage: `url(${getProxiedImageUrl(img.url)})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          height: 250,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          padding: 16,
-                        }}
-                      >
-                        <Text
-                          size="sm"
-                          fw={600}
-                          style={{
-                            color: 'white',
-                            textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)',
-                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                            padding: '8px 12px',
-                            borderRadius: 4,
-                          }}
-                        >
-                          {img.title}
-                        </Text>
-                      </Paper>
-                    </Carousel.Slide>
-                  ))}
-                </Carousel>
-              </Stack>
-            )}
-          </Stack>
-        )}
       </Modal>
     </Box>
   );
