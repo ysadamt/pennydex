@@ -166,7 +166,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
         source: 'machines',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': 'rgba(0, 0, 0, 0.3)',
+          'circle-color': 'rgba(0, 0, 0, 0.2)',
           'circle-radius': [
             'step',
             ['get', 'point_count'],
