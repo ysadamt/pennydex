@@ -5,110 +5,19 @@ import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Box, Text, Badge, Group, Stack, MantineProvider, Button, Modal, ActionIcon, Anchor } from '@mantine/core';
-import { QuestionIcon } from '@phosphor-icons/react/dist/ssr';
-import { ArrowUpRightIcon } from '@phosphor-icons/react';
+import { Box, MantineProvider } from '@mantine/core';
 import { theme } from '../layout';
 
-// SVG icons from Phosphor (regular weight) - encoded for use in MapLibre
-const COIN_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256"><path d="M209.37,60.27C188.08,49.62,160,44,128,44S67.92,49.62,46.63,60.27C24.62,71.27,12,87.21,12,104v48c0,16.79,12.62,32.73,34.63,43.73C67.92,206.38,96.05,212,128,212s60.08-5.62,81.37-16.27c22-11,34.63-26.94,34.63-43.73V104C244,87.21,231.38,71.27,209.37,60.27Zm-152,21.46C75.08,72.88,100.16,68,128,68s52.92,4.88,70.63,13.73C211.81,88.32,220,96.86,220,104s-8.19,15.68-21.37,22.27C180.92,135.12,155.84,140,128,140s-52.92-4.88-70.63-13.73C44.19,119.68,36,111.14,36,104S44.19,88.32,57.37,81.73ZM180,181.38a180.38,180.38,0,0,1-40,6.3v-24a210.39,210.39,0,0,0,40-5.51ZM76,158.22a210.39,210.39,0,0,0,40,5.51v24a180.38,180.38,0,0,1-40-6.3ZM36,152V141.54a94.54,94.54,0,0,0,10.63,6.19c1.74.87,3.54,1.7,5.37,2.5V171.3C42,165.24,36,158.11,36,152Zm168,19.3V150.23c1.83-.8,3.63-1.63,5.37-2.5A94.54,94.54,0,0,0,220,141.54V152C220,158.11,214,165.24,204,171.3Z"></path></svg>`;
-const X_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"></path></svg>`;
-const ARROW_UP_RIGHT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256"><path d="M204,64V168a12,12,0,0,1-24,0V93L72.49,200.49a12,12,0,0,1-17-17L163,76H88a12,12,0,0,1,0-24H192A12,12,0,0,1,204,64Z"></path></svg>`;
-
-interface PennyMachineImage {
-  title: string;
-  url: string;
-}
-
-interface PennyMachine {
-  id: string;
-  name: string;
-  address: string;
-  status: 'available' | 'outoforder' | 'gone';
-  designs: string;
-  latitude: number;
-  longitude: number;
-  desc?: string;
-  updated?: string;
-  images: PennyMachineImage[];
-}
-
-interface MapComponentProps {
-  machines: PennyMachine[];
-  searchTerm: string;
-  selectedStatuses: string[];
-  onMapLoaded?: () => void;
-}
-
-const getStatusColor = (status: string): string => {
-  if (status === 'available') return '#22c55e';
-  if (status === 'outoforder') return '#f59e0b';
-  return '#ef4444';
-};
-
-const getStatusLabel = (status: string): string => {
-  if (status === 'available') return 'Available';
-  if (status === 'outoforder') return 'Out of Order';
-  return 'Gone';
-};
-
-const getStatusBadgeColor = (status: string): string => {
-  if (status === 'available') return 'green';
-  if (status === 'outoforder') return 'yellow';
-  return 'red';
-};
-
-// Popup content component using Mantine
-function PopupContent({ machine }: { machine: PennyMachine }) {
-  return (
-    <Box miw={260} p="16px 4px 4px 4px">
-      <Group justify="space-between" align="flex-start" gap="xs" mb="xs">
-        <Stack gap={2} flex={1}>
-          <Text fw={600} size="sm" c="dark">
-            {machine.name}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {machine.address}
-          </Text>
-        </Stack>
-        <Badge color={getStatusBadgeColor(machine.status)} variant="light" size="sm">
-          {getStatusLabel(machine.status)}
-        </Badge>
-      </Group>
-
-      <Group gap="xs" mb="xs">
-        <Text size="xs" fw={500} mr={-6}>
-          Designs:
-        </Text>
-        <Badge variant="outline" color="gray" size="sm">
-          {machine.designs}
-        </Badge>
-      </Group>
-
-      {machine.updated && (
-        <Text size="xs" c="dimmed">
-          Last updated: {machine.updated}
-        </Text>
-      )}
-
-      <Button
-        component="a"
-        href={`http://locations.pennycollector.com/Details.aspx?location=${machine.id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        variant="light"
-        fullWidth
-        size="xs"
-        mt="xs"
-        rightSection={
-          <ArrowUpRightIcon size={14} weight="bold" />
-        }
-      >
-        PennyCollector.com
-      </Button>
-    </Box>
-  );
-}
+import {
+  PennyMachine,
+  MapComponentProps,
+  COIN_ICON_SVG,
+  X_ICON_SVG,
+  ARROW_UP_RIGHT_ICON_SVG,
+  PopupContent,
+  HelpModal,
+  MachineCounter,
+} from './map';
 
 export default function MapComponent({ machines, searchTerm, selectedStatuses, onMapLoaded }: MapComponentProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -492,88 +401,16 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
     <Box w="100%" h="100vh" pos="relative">
       <div ref={mapContainer} style={{ width: '100%', height: '100%', backgroundColor: '#004177' }} />
 
-      <Group pos="absolute" bottom={12} left={12} gap={8} align="center">
-        <Box
-          bg="white"
-          p="12px 16px"
-          bdrs={8}
-          fz={12}
-          color="#666"
-          style={{
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-            zIndex: 1,
-          }}
-        >
-          <Text size="xs" fw={500}>
-            Showing {filteredMachines.length} of {machines.length} machines
-          </Text>
-        </Box>
-        <ActionIcon
-          variant="filled"
-          bdrs={8}
-          size={40.797}
-          onClick={() => setHelpModalOpened(true)}
-        >
-          <QuestionIcon weight="bold" size={24} />
-        </ActionIcon>
-      </Group>
+      <MachineCounter
+        filteredCount={filteredMachines.length}
+        totalCount={machines.length}
+        onHelpClick={() => setHelpModalOpened(true)}
+      />
 
-      {/* Help Modal */}
-      <Modal
+      <HelpModal
         opened={helpModalOpened}
         onClose={() => setHelpModalOpened(false)}
-        title="How to Use PennyDex"
-        size="md"
-        styles={{
-          title: {
-            fontWeight: 600,
-            fontSize: '1.5rem',
-          },
-        }}
-      >
-        <Stack gap="md">
-          <Text size="sm">
-            Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! As a longtime pressed penny enthusiast, I've created this tool that visualizes all the penny press locations from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>.
-          </Text>
-
-          <Stack gap="xs">
-            <Text size="sm" fw={500}>Search</Text>
-            <Text size="sm" c="dimmed">
-              Use the search bar to filter machines by name or address. Start typing to see matching results.
-            </Text>
-          </Stack>
-
-          <Stack gap="xs">
-            <Text size="sm" fw={500}>Status Filters</Text>
-            <Text size="sm" c="dimmed">
-              Use the status filters to show machines by their current status:
-            </Text>
-            <Group gap="xs">
-              <Badge color="green" size="sm">Available</Badge>
-              <Text size="xs" c="dimmed">Machine is working</Text>
-            </Group>
-            <Group gap="xs">
-              <Badge color="yellow" size="sm">Out of Order</Badge>
-              <Text size="xs" c="dimmed">Machine needs repair</Text>
-            </Group>
-            <Group gap="xs">
-              <Badge color="red" size="sm">Gone</Badge>
-              <Text size="xs" c="dimmed">Machine has been removed</Text>
-            </Group>
-          </Stack>
-
-          <Stack gap="xs">
-            <Text size="sm" fw={500}>Map Navigation</Text>
-            <Text size="sm" c="dimmed">
-              Click on clusters to zoom in and see individual machines. Click on a machine marker to view its details, including a link for more information.
-            </Text>
-          </Stack>
-
-          <Text size="xs" c="dimmed" mt="sm">
-            Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. Made with ❤️ by <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">Adam Teo</Anchor>.
-          </Text>
-        </Stack>
-      </Modal>
+      />
     </Box>
   );
 }
