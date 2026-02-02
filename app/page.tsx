@@ -74,7 +74,7 @@ export default function Home() {
         <Center style={{ width: '100%', height: '100vh' }}>
           <Stack align="center" gap="md">
             <Loader size="lg" />
-            <Text>Loading penny machines...</Text>
+            <Text>Finding penny machines...</Text>
           </Stack>
         </Center>
       ) : (
