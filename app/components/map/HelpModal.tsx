@@ -51,11 +51,53 @@ export function HelpModal({ opened, onClose }: HelpModalProps) {
         </Stack>
 
         <Stack gap="xs">
+          <Text size="sm" fw={500}>Designs</Text>
+          <Text size="sm" c="dimmed">
+            Abbreviations used for coin design types:
+          </Text>
+          <Group gap="xl" align="flex-start">
+            <Stack gap="xs">
+              <Group gap="xs">
+                <Badge variant="outline" color="gray" size="sm">p</Badge>
+                <Text size="xs" c="dimmed">Penny</Text>
+              </Group>
+              <Group gap="xs">
+                <Badge variant="outline" color="gray" size="sm">n</Badge>
+                <Text size="xs" c="dimmed">Nickel</Text>
+              </Group>
+              <Group gap="xs">
+                <Badge variant="outline" color="gray" size="sm">d</Badge>
+                <Text size="xs" c="dimmed">Dime</Text>
+              </Group>
+              <Group gap="xs">
+                <Badge variant="outline" color="gray" size="sm">q</Badge>
+                <Text size="xs" c="dimmed">Quarter</Text>
+              </Group>
+            </Stack>
+            <Stack gap="xs">
+              <Group gap="xs">
+                <Badge variant="outline" color="gray" size="sm">m</Badge>
+                <Text size="xs" c="dimmed">Mule (2-sided design)</Text>
+              </Group>
+              <Group gap="xs">
+                <Badge variant="outline" color="gray" size="sm">e</Badge>
+                <Text size="xs" c="dimmed">Euro</Text>
+              </Group>
+              <Group gap="xs">
+                <Badge variant="outline" color="gray" size="sm">t</Badge>
+                <Text size="xs" c="dimmed">Token</Text>
+              </Group>
+            </Stack>
+          </Group>
+        </Stack>
+
+        <Stack gap="xs">
           <Text size="sm" fw={500}>Map Navigation</Text>
           <Text size="sm" c="dimmed">
             Click on clusters to zoom in and see individual machines. Click on a machine marker to view its details, including a link for more information.
           </Text>
         </Stack>
+
 
         <Text size="xs" c="dimmed" mt="sm">
           Data sourced from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. Made with ❤️ by <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">Adam Teo</Anchor>.
