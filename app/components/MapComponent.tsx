@@ -27,6 +27,15 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
   const [filteredMachines, setFilteredMachines] = useState<PennyMachine[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [helpModalOpened, setHelpModalOpened] = useState(false);
+  const [mapStyle, setMapStyle] = useState<maplibregl.StyleSpecification | null>(null);
+
+  // Fetch map style from API
+  useEffect(() => {
+    fetch('/api/map-style')
+      .then((res) => res.json())
+      .then((style) => setMapStyle(style))
+      .catch((err) => console.error('Failed to load map style:', err));
+  }, []);
 
   // Filter machines with debounce
   useEffect(() => {
@@ -81,11 +90,11 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
 
   // Initialize map
   useEffect(() => {
-    if (map.current || !mapContainer.current) return;
+    if (map.current || !mapContainer.current || !mapStyle) return;
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://tiles.openfreemap.org/styles/bright',
+      style: mapStyle,
       center: [-98.5795, 39.8283],
       zoom: 3,
       minZoom: 2,
@@ -109,7 +118,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
       map.current?.remove();
       map.current = null;
     };
-  }, []);
+  }, [mapStyle]);
 
   // Update map data when filtered machines change
   useEffect(() => {
