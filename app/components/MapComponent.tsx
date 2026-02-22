@@ -101,7 +101,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
       maxZoom: 18,
     });
 
-    map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.current.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 
     popup.current = new maplibregl.Popup({
       closeButton: true,
