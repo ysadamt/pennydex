@@ -16,9 +16,21 @@ export interface PennyMachine {
   images: PennyMachineImage[];
 }
 
+export interface UserMachineSummary {
+  id: string;
+  name: string;
+  address: string;
+}
+
 export interface MapComponentProps {
   machines: PennyMachine[];
   searchTerm: string;
   selectedStatuses: string[];
   onMapLoaded?: () => void;
+  favoriteMachineIds?: string[];
+  visitedMachineIds?: string[];
+  isSignedIn?: boolean;
+  onRequireSignIn?: () => void;
+  onFavoriteChange?: (machineId: string, isFavorite: boolean) => Promise<void>;
+  onVisitedChange?: (machineId: string, isVisited: boolean) => Promise<void>;
 }

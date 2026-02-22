@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Stack, Center, Loader, Text, Button, Modal } from '@mantine/core';
 import dynamic from 'next/dynamic';
 import type { User } from 'firebase/auth';
@@ -10,11 +10,17 @@ import {
   auth,
   createAccountWithEmailPassword,
   getAuthErrorMessage,
+  getUserLocationState,
+  setUserFavoriteMachine,
+  setUserVisitedMachine,
   signInWithEmailPassword,
   signInWithGoogle,
   signOutUser,
+  UserLocationState,
 } from './utils/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import type { UserMachineSummary } from './components/map';
+import { SignInIcon, UserCircleIcon } from '@phosphor-icons/react';
 
 interface PennyMachineImage {
   title: string;
@@ -58,6 +64,10 @@ export default function Home() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [userLocationState, setUserLocationState] = useState<UserLocationState>({
+    favoriteMachineIds: [],
+    visitedMachineIds: [],
+  });
 
   useEffect(() => {
     const loadMachines = async () => {
@@ -83,6 +93,24 @@ export default function Home() {
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    const loadUserLocations = async () => {
+      if (!user) {
+        setUserLocationState({ favoriteMachineIds: [], visitedMachineIds: [] });
+        return;
+      }
+
+      try {
+        const state = await getUserLocationState(user.uid);
+        setUserLocationState(state);
+      } catch (error) {
+        console.error('Error loading user location state:', error);
+      }
+    };
+
+    loadUserLocations();
+  }, [user]);
 
   const withAuthRequest = async (action: () => Promise<void>) => {
     try {
@@ -134,12 +162,82 @@ export default function Home() {
     });
   };
 
+  const handleFavoriteChange = async (machineId: string, isFavorite: boolean) => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    const normalizedMachineId = String(machineId);
+
+    try {
+      const nextState = await setUserFavoriteMachine(user.uid, normalizedMachineId, isFavorite);
+      setUserLocationState(nextState);
+    } catch (error) {
+      console.error('Error updating favorite machine:', error);
+    }
+  };
+
+  const handleVisitedChange = async (machineId: string, isVisited: boolean) => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    const normalizedMachineId = String(machineId);
+
+    try {
+      const nextState = await setUserVisitedMachine(user.uid, normalizedMachineId, isVisited);
+      setUserLocationState(nextState);
+    } catch (error) {
+      console.error('Error updating visited machine:', error);
+    }
+  };
+
+  const machineLookup = useMemo(() => {
+    return new Map(machines.map((machine) => [machine.id, machine]));
+  }, [machines]);
+
+  const favoriteMachines = useMemo<UserMachineSummary[]>(() => {
+    return userLocationState.favoriteMachineIds
+      .map((machineId) => {
+        const machine = machineLookup.get(machineId);
+        if (!machine) {
+          return null;
+        }
+
+        return {
+          id: machine.id,
+          name: machine.name,
+          address: machine.address,
+        };
+      })
+      .filter((machine): machine is UserMachineSummary => machine !== null);
+  }, [machineLookup, userLocationState.favoriteMachineIds]);
+
+  const visitedMachines = useMemo<UserMachineSummary[]>(() => {
+    return userLocationState.visitedMachineIds
+      .map((machineId) => {
+        const machine = machineLookup.get(machineId);
+        if (!machine) {
+          return null;
+        }
+
+        return {
+          id: machine.id,
+          name: machine.name,
+          address: machine.address,
+        };
+      })
+      .filter((machine): machine is UserMachineSummary => machine !== null);
+  }, [machineLookup, userLocationState.visitedMachineIds]);
+
   return (
     <Box style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
       {!isAuthLoading ? (
         <Box style={{ position: 'absolute', top: 16, right: 16, zIndex: 1200 }}>
-          <Button variant="filled" onClick={() => setIsAuthModalOpen(true)}>
-            {user ? 'Account' : 'Sign in'}
+          <Button variant="filled" onClick={() => setIsAuthModalOpen(true)} rightSection={user ? <UserCircleIcon size={16} weight="bold" /> : <SignInIcon size={16} weight="bold" />} >
+            {user ? 'Profile' : 'Sign in'}
           </Button>
         </Box>
       ) : null}
@@ -147,13 +245,15 @@ export default function Home() {
       <Modal
         opened={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        title={user ? 'Your account' : 'Sign in'}
+        title={user ? 'Profile' : 'Sign in'}
         centered
       >
         <AuthPanel
           user={user}
           isAuthenticating={isAuthenticating}
           authError={authError}
+          favoriteMachines={favoriteMachines}
+          visitedMachines={visitedMachines}
           onEmailSignIn={handleEmailSignIn}
           onCreateAccount={handleCreateAccount}
           onGoogleSignIn={handleGoogleSignIn}
@@ -183,6 +283,12 @@ export default function Home() {
           searchTerm={searchTerm}
           selectedStatuses={selectedStatuses}
           onMapLoaded={() => setMapReady(true)}
+          favoriteMachineIds={userLocationState.favoriteMachineIds}
+          visitedMachineIds={userLocationState.visitedMachineIds}
+          isSignedIn={Boolean(user)}
+          onRequireSignIn={() => setIsAuthModalOpen(true)}
+          onFavoriteChange={handleFavoriteChange}
+          onVisitedChange={handleVisitedChange}
         />
       )}
     </Box>

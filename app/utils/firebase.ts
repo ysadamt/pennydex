@@ -9,6 +9,13 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  getFirestore,
+  runTransaction,
+  serverTimestamp,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -23,6 +30,7 @@ export const firebaseApp = getApps().length
   ? getApp()
   : initializeApp(firebaseConfig);
 export const auth = getAuth(firebaseApp);
+export const db = getFirestore(firebaseApp);
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
@@ -79,6 +87,145 @@ export const signInWithGoogle = async () => {
 
 export const signOutUser = async () => {
   await signOut(auth);
+};
+
+export interface UserLocationState {
+  favoriteMachineIds: string[];
+  visitedMachineIds: string[];
+}
+
+const getUserLocationsRef = (uid: string) => {
+  return doc(db, "users", uid, "metadata", "locations");
+};
+
+export const getUserLocationState = async (
+  uid: string,
+): Promise<UserLocationState> => {
+  const snapshot = await getDoc(getUserLocationsRef(uid));
+
+  if (!snapshot.exists()) {
+    return {
+      favoriteMachineIds: [],
+      visitedMachineIds: [],
+    };
+  }
+
+  const data = snapshot.data();
+
+  return {
+    favoriteMachineIds: Array.isArray(data.favoriteMachineIds)
+      ? data.favoriteMachineIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [],
+    visitedMachineIds: Array.isArray(data.visitedMachineIds)
+      ? data.visitedMachineIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [],
+  };
+};
+
+const updateLocationIds = (
+  currentIds: string[],
+  machineId: string,
+  shouldInclude: boolean,
+): string[] => {
+  const idSet = new Set(currentIds);
+
+  if (shouldInclude) {
+    idSet.add(machineId);
+  } else {
+    idSet.delete(machineId);
+  }
+
+  return Array.from(idSet);
+};
+
+export const setUserFavoriteMachine = async (
+  uid: string,
+  machineId: string,
+  isFavorite: boolean,
+): Promise<UserLocationState> => {
+  const locationsRef = getUserLocationsRef(uid);
+
+  return runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(locationsRef);
+    const data = snapshot.data();
+
+    const currentFavorites = Array.isArray(data?.favoriteMachineIds)
+      ? data.favoriteMachineIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [];
+
+    const nextState: UserLocationState = {
+      favoriteMachineIds: updateLocationIds(
+        currentFavorites,
+        machineId,
+        isFavorite,
+      ),
+      visitedMachineIds: Array.isArray(data?.visitedMachineIds)
+        ? data.visitedMachineIds.filter(
+            (value): value is string => typeof value === "string",
+          )
+        : [],
+    };
+
+    transaction.set(
+      locationsRef,
+      {
+        ...nextState,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return nextState;
+  });
+};
+
+export const setUserVisitedMachine = async (
+  uid: string,
+  machineId: string,
+  isVisited: boolean,
+): Promise<UserLocationState> => {
+  const locationsRef = getUserLocationsRef(uid);
+
+  return runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(locationsRef);
+    const data = snapshot.data();
+
+    const currentVisited = Array.isArray(data?.visitedMachineIds)
+      ? data.visitedMachineIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [];
+
+    const nextState: UserLocationState = {
+      favoriteMachineIds: Array.isArray(data?.favoriteMachineIds)
+        ? data.favoriteMachineIds.filter(
+            (value): value is string => typeof value === "string",
+          )
+        : [],
+      visitedMachineIds: updateLocationIds(
+        currentVisited,
+        machineId,
+        isVisited,
+      ),
+    };
+
+    transaction.set(
+      locationsRef,
+      {
+        ...nextState,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return nextState;
+  });
 };
 
 export { getAuthErrorMessage };

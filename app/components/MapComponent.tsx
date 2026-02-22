@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { createRoot } from 'react-dom/client';
-import { flushSync } from 'react-dom';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Box, MantineProvider } from '@mantine/core';
@@ -19,15 +18,74 @@ import {
   MachineCounter,
 } from './map';
 
-export default function MapComponent({ machines, searchTerm, selectedStatuses, onMapLoaded }: MapComponentProps) {
+export default function MapComponent({
+  machines,
+  searchTerm,
+  selectedStatuses,
+  onMapLoaded,
+  favoriteMachineIds,
+  visitedMachineIds,
+  isSignedIn,
+  onRequireSignIn,
+  onFavoriteChange,
+  onVisitedChange,
+}: MapComponentProps) {
+  const activePopupMachineRef = useRef<PennyMachine | null>(null);
+  const activePopupCoordinatesRef = useRef<[number, number] | null>(null);
+  const popupContainerRef = useRef<HTMLDivElement | null>(null);
+  const popupRootRef = useRef<Root | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const popup = useRef<maplibregl.Popup | null>(null);
   const clusterMarkers = useRef<Map<number, maplibregl.Marker>>(new Map());
   const [filteredMachines, setFilteredMachines] = useState<PennyMachine[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [styleRevision, setStyleRevision] = useState(0);
   const [helpModalOpened, setHelpModalOpened] = useState(false);
   const [mapStyle, setMapStyle] = useState<maplibregl.StyleSpecification | null>(null);
+  const onMapLoadedRef = useRef(onMapLoaded);
+  const favoriteIdSetRef = useRef<Set<string>>(new Set());
+  const visitedIdSetRef = useRef<Set<string>>(new Set());
+  const isSignedInRef = useRef(Boolean(isSignedIn));
+  const onRequireSignInRef = useRef(onRequireSignIn);
+  const onFavoriteChangeRef = useRef(onFavoriteChange);
+  const onVisitedChangeRef = useRef(onVisitedChange);
+  const favoriteIdSet = useMemo(
+    () => new Set((favoriteMachineIds ?? []).map((machineId) => String(machineId))),
+    [favoriteMachineIds],
+  );
+  const visitedIdSet = useMemo(
+    () => new Set((visitedMachineIds ?? []).map((machineId) => String(machineId))),
+    [visitedMachineIds],
+  );
+
+  useEffect(() => {
+    onMapLoadedRef.current = onMapLoaded;
+  }, [onMapLoaded]);
+
+  useEffect(() => {
+    favoriteIdSetRef.current = favoriteIdSet;
+  }, [favoriteIdSet]);
+
+  useEffect(() => {
+    visitedIdSetRef.current = visitedIdSet;
+  }, [visitedIdSet]);
+
+  useEffect(() => {
+    isSignedInRef.current = Boolean(isSignedIn);
+  }, [isSignedIn]);
+
+  useEffect(() => {
+    onRequireSignInRef.current = onRequireSignIn;
+  }, [onRequireSignIn]);
+
+  useEffect(() => {
+    onFavoriteChangeRef.current = onFavoriteChange;
+  }, [onFavoriteChange]);
+
+  useEffect(() => {
+    onVisitedChangeRef.current = onVisitedChange;
+  }, [onVisitedChange]);
 
   // Fetch map style from API
   useEffect(() => {
@@ -68,19 +126,37 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
   const showPopup = useCallback((machine: PennyMachine, coordinates: [number, number]) => {
     if (!map.current || !popup.current) return;
 
-    // Create a container div for the React component
-    const container = document.createElement('div');
-    const root = createRoot(container);
+    activePopupMachineRef.current = machine;
+    activePopupCoordinatesRef.current = coordinates;
 
-    // Use flushSync to render synchronously so content is ready before popup displays
-    // Wrap with MantineProvider since this is rendered outside the main React tree
-    flushSync(() => {
-      root.render(
-        <MantineProvider theme={theme}>
-          <PopupContent machine={machine} />
-        </MantineProvider>
-      );
-    });
+    if (!popupContainerRef.current) {
+      popupContainerRef.current = document.createElement('div');
+    }
+
+    if (!popupRootRef.current) {
+      popupRootRef.current = createRoot(popupContainerRef.current);
+    }
+
+    const container = popupContainerRef.current;
+    const root = popupRootRef.current;
+
+    root.render(
+      <MantineProvider theme={theme}>
+        <PopupContent
+          machine={machine}
+          isSignedIn={isSignedInRef.current}
+          isFavorite={favoriteIdSetRef.current.has(String(machine.id))}
+          isVisited={visitedIdSetRef.current.has(String(machine.id))}
+          onRequireSignIn={() => onRequireSignInRef.current?.()}
+          onFavoriteChange={async (machineId, isFavorite) => {
+            await onFavoriteChangeRef.current?.(String(machineId), isFavorite);
+          }}
+          onVisitedChange={async (machineId, isVisited) => {
+            await onVisitedChangeRef.current?.(String(machineId), isVisited);
+          }}
+        />
+      </MantineProvider>
+    );
 
     popup.current
       .setLngLat(coordinates)
@@ -109,12 +185,34 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
       maxWidth: '320px',
     });
 
-    map.current.on('load', () => {
-      setMapLoaded(true);
-      onMapLoaded?.();
+    popup.current.on('close', () => {
+      activePopupMachineRef.current = null;
+      activePopupCoordinatesRef.current = null;
     });
 
+    map.current.on('load', () => {
+      setMapLoaded(true);
+      onMapLoadedRef.current?.();
+    });
+
+    const handleStyleData = () => {
+      if (map.current?.isStyleLoaded()) {
+        setStyleRevision((current) => current + 1);
+      }
+    };
+
+    map.current.on('styledata', handleStyleData);
+
     return () => {
+      map.current?.off('styledata', handleStyleData);
+      const popupRoot = popupRootRef.current;
+      popupRootRef.current = null;
+      popupContainerRef.current = null;
+      if (popupRoot) {
+        queueMicrotask(() => {
+          popupRoot.unmount();
+        });
+      }
       map.current?.remove();
       map.current = null;
     };
@@ -123,6 +221,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
   // Update map data when filtered machines change
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
+    if (!map.current.isStyleLoaded()) return;
 
     const geojsonData: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
@@ -369,7 +468,7 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
         const props = feature.properties;
 
         const machine: PennyMachine = {
-          id: props.id,
+          id: String(props.id),
           name: props.name,
           address: props.address,
           status: props.status,
@@ -404,7 +503,14 @@ export default function MapComponent({ machines, searchTerm, selectedStatuses, o
         map.current!.getCanvas().style.cursor = '';
       });
     }
-  }, [filteredMachines, mapLoaded, showPopup]);
+  }, [filteredMachines, mapLoaded, showPopup, styleRevision]);
+
+  useEffect(() => {
+    if (!popup.current?.isOpen()) return;
+    if (!activePopupMachineRef.current || !activePopupCoordinatesRef.current) return;
+
+    showPopup(activePopupMachineRef.current, activePopupCoordinatesRef.current);
+  }, [favoriteMachineIds, visitedMachineIds, isSignedIn, showPopup]);
 
   return (
     <Box w="100%" h="100vh" pos="relative">
