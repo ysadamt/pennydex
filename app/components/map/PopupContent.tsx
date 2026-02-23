@@ -98,7 +98,7 @@ export function PopupContent({
       <Group mt="xs" grow>
         <Button
           variant={favorite ? 'filled' : 'light'}
-          color={favorite ? 'red' : 'gray'}
+          color={favorite ? 'pink' : 'gray'}
           size="xs"
           rightSection={<HeartIcon size={15} weight={favorite ? 'fill' : 'bold'} />}
           onClick={handleFavoriteClick}
@@ -108,7 +108,7 @@ export function PopupContent({
         </Button>
         <Button
           variant={visited ? 'filled' : 'light'}
-          color={visited ? 'green' : 'gray'}
+          color={visited ? 'blue' : 'gray'}
           size="xs"
           rightSection={<CheckCircleIcon size={15} weight={visited ? 'fill' : 'bold'} />}
           onClick={handleVisitedClick}

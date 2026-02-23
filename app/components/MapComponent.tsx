@@ -22,6 +22,7 @@ export default function MapComponent({
   machines,
   searchTerm,
   selectedStatuses,
+  selectedSavedFilters,
   onMapLoaded,
   favoriteMachineIds,
   visitedMachineIds,
@@ -116,11 +117,23 @@ export default function MapComponent({
         filtered = [];
       }
 
+      if (selectedSavedFilters && selectedSavedFilters.length > 0) {
+        const favoriteIdSet = new Set((favoriteMachineIds ?? []).map((machineId) => String(machineId)));
+        const visitedIdSet = new Set((visitedMachineIds ?? []).map((machineId) => String(machineId)));
+
+        filtered = filtered.filter((machine) => {
+          const machineId = String(machine.id);
+          const matchesFavorite = selectedSavedFilters.includes('favorites') && favoriteIdSet.has(machineId);
+          const matchesVisited = selectedSavedFilters.includes('visited') && visitedIdSet.has(machineId);
+          return matchesFavorite || matchesVisited;
+        });
+      }
+
       setFilteredMachines(filtered);
     }, 150);
 
     return () => clearTimeout(timeoutId);
-  }, [machines, searchTerm, selectedStatuses]);
+  }, [machines, searchTerm, selectedStatuses, selectedSavedFilters, favoriteMachineIds, visitedMachineIds]);
 
   // Create popup with Mantine component
   const showPopup = useCallback((machine: PennyMachine, coordinates: [number, number]) => {

@@ -8,18 +8,20 @@ import {
   Button,
   Stack,
   Text,
-  Menu,
   Checkbox,
   Divider,
   Title,
 } from '@mantine/core';
-import { MagnifyingGlassIcon, FunnelSimpleIcon, ChecksIcon, XCircleIcon, CoinsIcon, CoinIcon } from '@phosphor-icons/react';
+import { MagnifyingGlassIcon, CoinIcon } from '@phosphor-icons/react';
 
 interface SearchBarProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   selectedStatuses: string[];
   onStatusChange: (statuses: string[]) => void;
+  isSignedIn: boolean;
+  selectedSavedFilters: string[];
+  onSavedFilterChange: (filters: string[]) => void;
 }
 
 const STATUS_OPTIONS = [
@@ -28,17 +30,33 @@ const STATUS_OPTIONS = [
   { value: 'gone', label: 'Gone' },
 ];
 
+const SAVED_FILTER_OPTIONS = [
+  { value: 'favorites', label: 'Favorites' },
+  { value: 'visited', label: 'Visited' },
+];
+
 export default function SearchBar({
   searchTerm,
   onSearchChange,
   selectedStatuses,
   onStatusChange,
+  isSignedIn,
+  selectedSavedFilters,
+  onSavedFilterChange,
 }: SearchBarProps) {
   const handleStatusToggle = (status: string) => {
     if (selectedStatuses.includes(status)) {
       onStatusChange(selectedStatuses.filter((s) => s !== status));
     } else {
       onStatusChange([...selectedStatuses, status]);
+    }
+  };
+
+  const handleSavedFilterToggle = (filter: string) => {
+    if (selectedSavedFilters.includes(filter)) {
+      onSavedFilterChange(selectedSavedFilters.filter((value) => value !== filter));
+    } else {
+      onSavedFilterChange([...selectedSavedFilters, filter]);
     }
   };
 
@@ -103,35 +121,23 @@ export default function SearchBar({
             <Text size="sm" fw={600}>
               Status Filters
             </Text>
-            <Menu shadow="md" position="bottom-end" withArrow>
-              <Menu.Target>
-                <Button
-                  variant="light"
-                  size="xs"
-                  rightSection={<FunnelSimpleIcon weight="bold" size={13} />}
-                >
-                  Options
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown style={{ zIndex: 1000 }}>
-                <Menu.Item
-                  leftSection={<ChecksIcon weight="bold" size={18} />}
-                  onClick={() => {
-                    onStatusChange(STATUS_OPTIONS.map((opt) => opt.value));
-                  }}
-                >
-                  Select All
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<XCircleIcon weight="bold" size={18} />}
-                  onClick={() => {
-                    onStatusChange([]);
-                  }}
-                >
-                  Clear All
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+            <Group gap="xs">
+              <Button
+                variant="light"
+                size="compact-xs"
+                onClick={() => onStatusChange(STATUS_OPTIONS.map((opt) => opt.value))}
+              >
+                Select all
+              </Button>
+              <Button
+                variant="subtle"
+                color="gray"
+                size="compact-xs"
+                onClick={() => onStatusChange([])}
+              >
+                Clear
+              </Button>
+            </Group>
           </Group>
 
           {/* Checkboxes */}
@@ -159,14 +165,67 @@ export default function SearchBar({
           </Stack>
         </Box>
 
-        {/* Active Filters Display */}
+        {isSignedIn ? (
+          <>
+            <Divider />
+            <Box>
+              <Group justify="space-between" mb="xs">
+                <Text size="sm" fw={600}>
+                  Saved Filters
+                </Text>
+                <Group gap="xs">
+                  <Button
+                    variant="light"
+                    size="compact-xs"
+                    onClick={() => onSavedFilterChange(SAVED_FILTER_OPTIONS.map((filter) => filter.value))}
+                  >
+                    Select all
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    color="gray"
+                    size="compact-xs"
+                    onClick={() => onSavedFilterChange([])}
+                  >
+                    Clear
+                  </Button>
+                </Group>
+              </Group>
+
+              <Stack gap="sm">
+                {SAVED_FILTER_OPTIONS.map((filter) => (
+                  <Group key={filter.value} gap="xs">
+                    <Checkbox
+                      checked={selectedSavedFilters.includes(filter.value)}
+                      onChange={() => handleSavedFilterToggle(filter.value)}
+                      styles={{
+                        input: {
+                          cursor: 'pointer',
+                        },
+                      }}
+                    />
+                    <Text
+                      size="sm"
+                      style={{ cursor: 'pointer', flex: 1 }}
+                      onClick={() => handleSavedFilterToggle(filter.value)}
+                    >
+                      {filter.label}
+                    </Text>
+                  </Group>
+                ))}
+              </Stack>
+            </Box>
+          </>
+        ) : null}
+
+        {/* Current Filters Display */}
         {
-          selectedStatuses.length > 0 && (
+          (selectedStatuses.length > 0 || selectedSavedFilters.length > 0) && (
             <>
               <Divider />
               <Box>
                 <Text size="xs" c="dimmed" mb="xs">
-                  Active filters:
+                  Current filters:
                 </Text>
                 <Group gap={4}>
                   {selectedStatuses.map((status) => (
@@ -184,6 +243,17 @@ export default function SearchBar({
                       style={{ cursor: 'pointer' }}
                     >
                       {STATUS_OPTIONS.find((opt) => opt.value === status)?.label}
+                    </Badge>
+                  ))}
+                  {selectedSavedFilters.map((filter) => (
+                    <Badge
+                      key={filter}
+                      variant="filled"
+                      color={filter === 'favorites' ? 'pink' : 'blue'}
+                      onClick={() => handleSavedFilterToggle(filter)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {SAVED_FILTER_OPTIONS.find((opt) => opt.value === filter)?.label}
                     </Badge>
                   ))}
                 </Group>

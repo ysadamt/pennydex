@@ -57,6 +57,7 @@ export default function Home() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
     'available',
   ]);
+  const [selectedSavedFilters, setSelectedSavedFilters] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -98,6 +99,7 @@ export default function Home() {
     const loadUserLocations = async () => {
       if (!user) {
         setUserLocationState({ favoriteMachineIds: [], visitedMachineIds: [] });
+        setSelectedSavedFilters([]);
         return;
       }
 
@@ -267,6 +269,9 @@ export default function Home() {
           onSearchChange={setSearchTerm}
           selectedStatuses={selectedStatuses}
           onStatusChange={setSelectedStatuses}
+          isSignedIn={Boolean(user)}
+          selectedSavedFilters={selectedSavedFilters}
+          onSavedFilterChange={setSelectedSavedFilters}
         />
       )}
 
@@ -282,6 +287,7 @@ export default function Home() {
           machines={machines}
           searchTerm={searchTerm}
           selectedStatuses={selectedStatuses}
+          selectedSavedFilters={selectedSavedFilters}
           onMapLoaded={() => setMapReady(true)}
           favoriteMachineIds={userLocationState.favoriteMachineIds}
           visitedMachineIds={userLocationState.visitedMachineIds}

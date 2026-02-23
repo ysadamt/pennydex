@@ -26,6 +26,7 @@ export interface MapComponentProps {
   machines: PennyMachine[];
   searchTerm: string;
   selectedStatuses: string[];
+  selectedSavedFilters?: string[];
   onMapLoaded?: () => void;
   favoriteMachineIds?: string[];
   visitedMachineIds?: string[];
