@@ -103,6 +103,7 @@ export function PopupContent({
           rightSection={<HeartIcon size={15} weight={favorite ? 'fill' : 'bold'} />}
           onClick={handleFavoriteClick}
           loading={favoriteLoading}
+          disabled={!isSignedIn}
         >
           {favorite ? 'Favorited' : 'Favorite'}
         </Button>
@@ -113,6 +114,7 @@ export function PopupContent({
           rightSection={<CheckCircleIcon size={15} weight={visited ? 'fill' : 'bold'} />}
           onClick={handleVisitedClick}
           loading={visitedLoading}
+          disabled={!isSignedIn}
         >
           {visited ? 'Visited' : 'Mark visited'}
         </Button>
