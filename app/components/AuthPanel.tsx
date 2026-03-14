@@ -13,7 +13,7 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { IconAlertCircle, IconBrandGoogle } from '@tabler/icons-react';
+import { WarningCircleIcon, BookmarkSimpleIcon, GoogleLogoIcon } from '@phosphor-icons/react';
 import type { User } from 'firebase/auth';
 
 interface AuthPanelProps {
@@ -74,7 +74,7 @@ export default function AuthPanel({
           </Button>
         </Group>
 
-        <Button variant="default" onClick={onOpenSavedLocations} fullWidth>
+        <Button variant="default" onClick={onOpenSavedLocations} rightSection={<BookmarkSimpleIcon weight="bold" size={16} />} fullWidth>
           Saved locations
         </Button>
       </Stack>
@@ -88,15 +88,19 @@ export default function AuthPanel({
       </Text>
 
       {authError ? (
-        <Alert color="red" icon={<IconAlertCircle size={16} />}>
+        <Alert color="red" icon={<WarningCircleIcon weight="bold" size={16} />}>
           {authError}
         </Alert>
       ) : null}
 
       <Tabs defaultValue="signin" variant="outline">
         <Tabs.List grow>
-          <Tabs.Tab value="signin">Sign in</Tabs.Tab>
-          <Tabs.Tab value="create">Create account</Tabs.Tab>
+          <Tabs.Tab value="signin" fw={600}>
+            Sign in
+          </Tabs.Tab>
+          <Tabs.Tab value="create" fw={600}>
+            Create account
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="signin" pt="sm">
@@ -157,7 +161,7 @@ export default function AuthPanel({
 
       <Button
         variant="default"
-        leftSection={<IconBrandGoogle size={16} />}
+        leftSection={<GoogleLogoIcon weight="bold" size={16} />}
         onClick={onGoogleSignIn}
         loading={isAuthenticating}
         fullWidth

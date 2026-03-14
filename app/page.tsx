@@ -355,8 +355,12 @@ export default function Home() {
       >
         <Tabs value={savedTab} onChange={(value) => setSavedTab((value as SavedTabValue) ?? 'favorites')}>
           <Tabs.List grow>
-            <Tabs.Tab value="favorites">Favorites ({favoriteMachines.length})</Tabs.Tab>
-            <Tabs.Tab value="visited">Visited ({visitedMachines.length})</Tabs.Tab>
+            <Tabs.Tab value="favorites" fw={600}>
+              Favorites ({favoriteMachines.length})
+            </Tabs.Tab>
+            <Tabs.Tab value="visited" fw={600}>
+              Visited ({visitedMachines.length})
+            </Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="favorites" pt="md">
