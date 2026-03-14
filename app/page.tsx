@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type ComponentType, type RefAttributes } from 'react';
-import { Box, Stack, Center, Loader, Text, Button, Modal, Drawer, Tabs, Card, Badge, Group } from '@mantine/core';
+import { Box, Stack, Center, Loader, Text, Button, Modal, Drawer, Tabs, Card, Badge, Group, Avatar } from '@mantine/core';
 import dynamic from 'next/dynamic';
 import type { User } from 'firebase/auth';
 import SearchBar from './components/SearchBar';
@@ -20,7 +20,7 @@ import {
 } from './utils/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { MapComponentHandle, MapComponentProps } from './components/map';
-import { SignInIcon, UserCircleIcon } from '@phosphor-icons/react';
+import { SignInIcon } from '@phosphor-icons/react';
 
 interface PennyMachineImage {
   title: string;
@@ -260,6 +260,19 @@ export default function Home() {
       .filter((machine): machine is SavedMachineSummary => machine !== null);
   }, [machineLookup, userLocationState.visitedMachineIds]);
 
+  const profileInitials = useMemo(() => {
+    const displayName = user?.displayName?.trim();
+    if (displayName) {
+      const parts = displayName.split(/\s+/).filter(Boolean);
+      const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('');
+      if (initials) {
+        return initials;
+      }
+    }
+
+    return user?.email?.[0]?.toUpperCase() ?? 'U';
+  }, [user]);
+
   const handleSavedLocationClick = (machineId: string) => {
     const focused = mapRef.current?.focusMachine(machineId);
     if (focused) {
@@ -315,14 +328,28 @@ export default function Home() {
   return (
     <Box style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
       {!isAuthLoading ? (
-        <Box style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000 }}>
-          <Button
-            variant="filled"
-            onClick={() => setIsAuthModalOpen(true)}
-            rightSection={user ? <UserCircleIcon size={16} weight="bold" /> : <SignInIcon size={16} weight="bold" />}
-          >
-            {user ? 'Profile' : 'Sign in'}
-          </Button>
+        <Box style={{ position: 'absolute', top: 16, right: 16, zIndex: 100 }}>
+          {user ? (
+            <Avatar
+              src={user.photoURL ?? undefined}
+              alt={user.displayName ?? user.email ?? 'Profile'}
+              radius="xl"
+              color="pennyRed"
+              size={40}
+              style={{ cursor: 'pointer' }}
+              onClick={() => setIsAuthModalOpen(true)}
+            >
+              {profileInitials}
+            </Avatar>
+          ) : (
+            <Button
+              variant="filled"
+              onClick={() => setIsAuthModalOpen(true)}
+              rightSection={<SignInIcon size={16} weight="bold" />}
+            >
+              Sign in
+            </Button>
+          )}
         </Box>
       ) : null}
 
@@ -333,6 +360,7 @@ export default function Home() {
         centered
       >
         <AuthPanel
+          profileInitials={profileInitials}
           user={user}
           isAuthenticating={isAuthenticating}
           authError={authError}

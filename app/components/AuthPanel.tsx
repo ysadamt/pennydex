@@ -18,6 +18,7 @@ import type { User } from 'firebase/auth';
 
 interface AuthPanelProps {
   user: User | null;
+  profileInitials: string;
   isAuthenticating: boolean;
   authError: string | null;
   onOpenSavedLocations: () => void;
@@ -29,6 +30,7 @@ interface AuthPanelProps {
 
 export default function AuthPanel({
   user,
+  profileInitials,
   isAuthenticating,
   authError,
   onOpenSavedLocations,
@@ -57,8 +59,13 @@ export default function AuthPanel({
       <Stack gap="sm">
         <Group justify="space-between" align="center">
           <Group gap="sm">
-            <Avatar radius="xl" color="pennyRed">
-              {user.email?.[0]?.toUpperCase() ?? 'U'}
+            <Avatar
+              src={user.photoURL ?? undefined}
+              alt={user.displayName ?? user.email ?? 'Profile'}
+              radius="xl"
+              color="pennyRed"
+            >
+              {profileInitials}
             </Avatar>
             <Stack gap={0}>
               <Text size="sm" fw={600}>
