@@ -355,11 +355,11 @@ export default function Home() {
       >
         <Tabs value={savedTab} onChange={(value) => setSavedTab((value as SavedTabValue) ?? 'favorites')}>
           <Tabs.List grow>
-            <Tabs.Tab value="favorites" fw={600}>
-              Favorites ({favoriteMachines.length})
+            <Tabs.Tab value="favorites" fw={600} rightSection={<Badge variant="light" size="xs">{favoriteMachines.length}</Badge>}>
+              Favorites
             </Tabs.Tab>
-            <Tabs.Tab value="visited" fw={600}>
-              Visited ({visitedMachines.length})
+            <Tabs.Tab value="visited" fw={600} rightSection={<Badge variant="light" size="xs">{visitedMachines.length}</Badge>}>
+              Visited
             </Tabs.Tab>
           </Tabs.List>
 
