@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -9,6 +9,7 @@ import { theme } from '../layout';
 
 import {
   PennyMachine,
+  MapComponentHandle,
   MapComponentProps,
   COIN_ICON_SVG,
   X_ICON_SVG,
@@ -18,7 +19,7 @@ import {
   MachineCounter,
 } from './map';
 
-export default function MapComponent({
+const MapComponent = forwardRef<MapComponentHandle, MapComponentProps>(function MapComponent({
   machines,
   searchTerm,
   selectedStatuses,
@@ -30,7 +31,7 @@ export default function MapComponent({
   onRequireSignIn,
   onFavoriteChange,
   onVisitedChange,
-}: MapComponentProps) {
+}: MapComponentProps, ref) {
   const activePopupMachineRef = useRef<PennyMachine | null>(null);
   const activePopupCoordinatesRef = useRef<[number, number] | null>(null);
   const popupContainerRef = useRef<HTMLDivElement | null>(null);
@@ -156,6 +157,7 @@ export default function MapComponent({
     root.render(
       <MantineProvider theme={theme}>
         <PopupContent
+          key={String(machine.id)}
           machine={machine}
           isSignedIn={isSignedInRef.current}
           isFavorite={favoriteIdSetRef.current.has(String(machine.id))}
@@ -525,6 +527,37 @@ export default function MapComponent({
     showPopup(activePopupMachineRef.current, activePopupCoordinatesRef.current);
   }, [favoriteMachineIds, visitedMachineIds, isSignedIn, showPopup]);
 
+  const focusMachine = useCallback(
+    (machineId: string) => {
+      if (!map.current || !mapLoaded) {
+        return false;
+      }
+
+      const targetMachine = machines.find((machine) => String(machine.id) === String(machineId));
+      if (!targetMachine) {
+        return false;
+      }
+
+      const coordinates: [number, number] = [targetMachine.longitude, targetMachine.latitude];
+      map.current.easeTo({
+        center: coordinates,
+        zoom: Math.max(map.current.getZoom(), 14),
+        duration: 900,
+      });
+      showPopup(targetMachine, coordinates);
+      return true;
+    },
+    [machines, mapLoaded, showPopup],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focusMachine,
+    }),
+    [focusMachine],
+  );
+
   return (
     <Box w="100%" h="100vh" pos="relative">
       <div ref={mapContainer} style={{ width: '100%', height: '100%', backgroundColor: '#004177' }} />
@@ -541,4 +574,6 @@ export default function MapComponent({
       />
     </Box>
   );
-}
+});
+
+export default MapComponent;

@@ -15,14 +15,12 @@ import {
 } from '@mantine/core';
 import { IconAlertCircle, IconBrandGoogle } from '@tabler/icons-react';
 import type { User } from 'firebase/auth';
-import type { UserMachineSummary } from './map';
 
 interface AuthPanelProps {
   user: User | null;
   isAuthenticating: boolean;
   authError: string | null;
-  favoriteMachines: UserMachineSummary[];
-  visitedMachines: UserMachineSummary[];
+  onOpenSavedLocations: () => void;
   onEmailSignIn: (email: string, password: string) => Promise<void>;
   onCreateAccount: (email: string, password: string) => Promise<void>;
   onGoogleSignIn: () => Promise<void>;
@@ -33,8 +31,7 @@ export default function AuthPanel({
   user,
   isAuthenticating,
   authError,
-  favoriteMachines,
-  visitedMachines,
+  onOpenSavedLocations,
   onEmailSignIn,
   onCreateAccount,
   onGoogleSignIn,
@@ -77,41 +74,9 @@ export default function AuthPanel({
           </Button>
         </Group>
 
-        <Divider />
-
-        <Stack gap={6}>
-          <Text size="sm" fw={600}>
-            Favorites ({favoriteMachines.length})
-          </Text>
-          {favoriteMachines.length === 0 ? (
-            <Text size="xs" c="dimmed">
-              No favorite locations yet.
-            </Text>
-          ) : (
-            favoriteMachines.map((machine) => (
-              <Text key={`favorite-${machine.id}`} size="xs" c="dimmed">
-                {machine.name}
-              </Text>
-            ))
-          )}
-        </Stack>
-
-        <Stack gap={6}>
-          <Text size="sm" fw={600}>
-            Visited ({visitedMachines.length})
-          </Text>
-          {visitedMachines.length === 0 ? (
-            <Text size="xs" c="dimmed">
-              No visited locations yet.
-            </Text>
-          ) : (
-            visitedMachines.map((machine) => (
-              <Text key={`visited-${machine.id}`} size="xs" c="dimmed">
-                {machine.name}
-              </Text>
-            ))
-          )}
-        </Stack>
+        <Button variant="default" onClick={onOpenSavedLocations} fullWidth>
+          Saved locations
+        </Button>
       </Stack>
     );
   }

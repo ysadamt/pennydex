@@ -2,7 +2,7 @@ import { Box, Text, Badge, Group, Stack, Button } from '@mantine/core';
 import { ArrowUpRightIcon, CheckCircleIcon, HeartIcon } from '@phosphor-icons/react';
 import { PennyMachine } from './types';
 import { getStatusLabel, getStatusBadgeColor } from './utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface PopupContentProps {
   machine: PennyMachine;
@@ -27,6 +27,13 @@ export function PopupContent({
   const [visited, setVisited] = useState(isVisited);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [visitedLoading, setVisitedLoading] = useState(false);
+
+  useEffect(() => {
+    setFavorite(isFavorite);
+    setVisited(isVisited);
+    setFavoriteLoading(false);
+    setVisitedLoading(false);
+  }, [machine.id, isFavorite, isVisited]);
 
   const handleFavoriteClick = async () => {
     if (!isSignedIn) {

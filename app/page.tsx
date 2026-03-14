@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Box, Stack, Center, Loader, Text, Button, Modal } from '@mantine/core';
+import { useEffect, useMemo, useRef, useState, type ComponentType, type RefAttributes } from 'react';
+import { Box, Stack, Center, Loader, Text, Button, Modal, Drawer, Tabs, Card, Badge, Group } from '@mantine/core';
 import dynamic from 'next/dynamic';
 import type { User } from 'firebase/auth';
 import SearchBar from './components/SearchBar';
@@ -19,7 +19,7 @@ import {
   UserLocationState,
 } from './utils/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import type { UserMachineSummary } from './components/map';
+import type { MapComponentHandle, MapComponentProps } from './components/map';
 import { SignInIcon, UserCircleIcon } from '@phosphor-icons/react';
 
 interface PennyMachineImage {
@@ -39,6 +39,15 @@ interface PennyMachine {
   images: PennyMachineImage[];
 }
 
+interface SavedMachineSummary {
+  id: string;
+  name: string;
+  address: string;
+  status: PennyMachine['status'];
+}
+
+type SavedTabValue = 'favorites' | 'visited';
+
 const MapComponent = dynamic(() => import('./components/MapComponent'), {
   ssr: false,
   loading: () => (
@@ -49,7 +58,19 @@ const MapComponent = dynamic(() => import('./components/MapComponent'), {
       </Stack>
     </Center>
   ),
-});
+}) as ComponentType<MapComponentProps & RefAttributes<MapComponentHandle>>;
+
+const statusCopy: Record<PennyMachine['status'], string> = {
+  available: 'Available',
+  outoforder: 'Out of order',
+  gone: 'Gone',
+};
+
+const statusBadgeColor: Record<PennyMachine['status'], string> = {
+  available: 'green',
+  outoforder: 'yellow',
+  gone: 'red',
+};
 
 export default function Home() {
   const [machines, setMachines] = useState<PennyMachine[]>([]);
@@ -65,10 +86,13 @@ export default function Home() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState(false);
+  const [savedTab, setSavedTab] = useState<SavedTabValue>('favorites');
   const [userLocationState, setUserLocationState] = useState<UserLocationState>({
     favoriteMachineIds: [],
     visitedMachineIds: [],
   });
+  const mapRef = useRef<MapComponentHandle | null>(null);
 
   useEffect(() => {
     const loadMachines = async () => {
@@ -200,7 +224,7 @@ export default function Home() {
     return new Map(machines.map((machine) => [machine.id, machine]));
   }, [machines]);
 
-  const favoriteMachines = useMemo<UserMachineSummary[]>(() => {
+  const favoriteMachines = useMemo<SavedMachineSummary[]>(() => {
     return userLocationState.favoriteMachineIds
       .map((machineId) => {
         const machine = machineLookup.get(machineId);
@@ -212,12 +236,13 @@ export default function Home() {
           id: machine.id,
           name: machine.name,
           address: machine.address,
+          status: machine.status,
         };
       })
-      .filter((machine): machine is UserMachineSummary => machine !== null);
+      .filter((machine): machine is SavedMachineSummary => machine !== null);
   }, [machineLookup, userLocationState.favoriteMachineIds]);
 
-  const visitedMachines = useMemo<UserMachineSummary[]>(() => {
+  const visitedMachines = useMemo<SavedMachineSummary[]>(() => {
     return userLocationState.visitedMachineIds
       .map((machineId) => {
         const machine = machineLookup.get(machineId);
@@ -229,16 +254,73 @@ export default function Home() {
           id: machine.id,
           name: machine.name,
           address: machine.address,
+          status: machine.status,
         };
       })
-      .filter((machine): machine is UserMachineSummary => machine !== null);
+      .filter((machine): machine is SavedMachineSummary => machine !== null);
   }, [machineLookup, userLocationState.visitedMachineIds]);
+
+  const handleSavedLocationClick = (machineId: string) => {
+    const focused = mapRef.current?.focusMachine(machineId);
+    if (focused) {
+      setIsSavedDrawerOpen(false);
+    }
+  };
+
+  const openSavedLocations = () => {
+    setIsAuthModalOpen(false);
+    setIsSavedDrawerOpen(true);
+  };
+
+  const renderSavedLocationCards = (locations: SavedMachineSummary[], emptyMessage: string) => {
+    if (locations.length === 0) {
+      return (
+        <Text size="sm" c="dimmed">
+          {emptyMessage}
+        </Text>
+      );
+    }
+
+    return (
+      <Stack gap="sm">
+        {locations.map((machine) => (
+          <Card
+            key={machine.id}
+            withBorder
+            radius="md"
+            p="md"
+            shadow="xs"
+            style={{ cursor: 'pointer' }}
+            onClick={() => handleSavedLocationClick(machine.id)}
+          >
+            <Stack gap={8}>
+              <Group justify="space-between" align="flex-start">
+                <Text fw={600} size="sm" style={{ lineHeight: 1.3 }}>
+                  {machine.name}
+                </Text>
+                <Badge color={statusBadgeColor[machine.status]} variant="light" radius="sm">
+                  {statusCopy[machine.status]}
+                </Badge>
+              </Group>
+              <Text size="xs" c="dimmed" style={{ lineHeight: 1.4 }}>
+                {machine.address}
+              </Text>
+            </Stack>
+          </Card>
+        ))}
+      </Stack>
+    );
+  };
 
   return (
     <Box style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
       {!isAuthLoading ? (
-        <Box style={{ position: 'absolute', top: 16, right: 16, zIndex: 1200 }}>
-          <Button variant="filled" onClick={() => setIsAuthModalOpen(true)} rightSection={user ? <UserCircleIcon size={16} weight="bold" /> : <SignInIcon size={16} weight="bold" />} >
+        <Box style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000 }}>
+          <Button
+            variant="filled"
+            onClick={() => setIsAuthModalOpen(true)}
+            rightSection={user ? <UserCircleIcon size={16} weight="bold" /> : <SignInIcon size={16} weight="bold" />}
+          >
             {user ? 'Profile' : 'Sign in'}
           </Button>
         </Box>
@@ -254,14 +336,38 @@ export default function Home() {
           user={user}
           isAuthenticating={isAuthenticating}
           authError={authError}
-          favoriteMachines={favoriteMachines}
-          visitedMachines={visitedMachines}
+          onOpenSavedLocations={openSavedLocations}
           onEmailSignIn={handleEmailSignIn}
           onCreateAccount={handleCreateAccount}
           onGoogleSignIn={handleGoogleSignIn}
           onSignOut={handleSignOut}
         />
       </Modal>
+
+      <Drawer
+        opened={isSavedDrawerOpen}
+        onClose={() => setIsSavedDrawerOpen(false)}
+        title="Saved locations"
+        position="right"
+        size="sm"
+        zIndex={1400}
+        overlayProps={{ opacity: 0.2, blur: 2 }}
+      >
+        <Tabs value={savedTab} onChange={(value) => setSavedTab((value as SavedTabValue) ?? 'favorites')}>
+          <Tabs.List grow>
+            <Tabs.Tab value="favorites">Favorites ({favoriteMachines.length})</Tabs.Tab>
+            <Tabs.Tab value="visited">Visited ({visitedMachines.length})</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="favorites" pt="md">
+            {renderSavedLocationCards(favoriteMachines, 'No favorite locations yet.')}
+          </Tabs.Panel>
+
+          <Tabs.Panel value="visited" pt="md">
+            {renderSavedLocationCards(visitedMachines, 'No visited locations yet.')}
+          </Tabs.Panel>
+        </Tabs>
+      </Drawer>
 
       {!isLoading && mapReady && (
         <SearchBar
@@ -284,6 +390,7 @@ export default function Home() {
         </Center>
       ) : (
         <MapComponent
+          ref={mapRef}
           machines={machines}
           searchTerm={searchTerm}
           selectedStatuses={selectedStatuses}

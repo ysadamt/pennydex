@@ -22,6 +22,10 @@ export interface UserMachineSummary {
   address: string;
 }
 
+export interface MapComponentHandle {
+  focusMachine: (machineId: string) => boolean;
+}
+
 export interface MapComponentProps {
   machines: PennyMachine[];
   searchTerm: string;
