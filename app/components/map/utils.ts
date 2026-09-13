@@ -15,3 +15,18 @@ export const getStatusBadgeColor = (status: string): string => {
   if (status === "outoforder") return "yellow";
   return "red";
 };
+
+export const formatSyncDate = (dateStr: string): string => {
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  } catch {
+    return dateStr;
+  }
+};

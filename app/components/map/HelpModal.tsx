@@ -1,11 +1,42 @@
+import { useState, useEffect } from 'react';
 import { Modal, Stack, Text, Group, Badge, Anchor } from '@mantine/core';
 
 interface HelpModalProps {
   opened: boolean;
   onClose: () => void;
+  syncDate?: string;
 }
 
-export function HelpModal({ opened, onClose }: HelpModalProps) {
+export function HelpModal({ opened, onClose, syncDate: initialSyncDate }: HelpModalProps) {
+  const [fetchedSyncDate, setFetchedSyncDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialSyncDate) {
+      return;
+    }
+
+    let isMounted = true;
+    fetch('/api/sync-date')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch sync date');
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted && data?.date) {
+          setFetchedSyncDate(data.date);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching sync date:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialSyncDate]);
+
+  const syncDate = initialSyncDate || fetchedSyncDate || 'September 7, 2026';
+
   return (
     <Modal
       opened={opened}
@@ -21,7 +52,7 @@ export function HelpModal({ opened, onClose }: HelpModalProps) {
     >
       <Stack gap="md">
         <Text size="sm">
-          Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! As a longtime pressed penny enthusiast, I've created this tool that visualizes all the penny press locations from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>.
+          Welcome to <strong>PennyDex</strong>; your interactive guide to finding pressed penny machines worldwide! As a longtime pressed penny enthusiast, I&apos;ve created this tool that visualizes all the penny press locations from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>.
         </Text>
 
         <Stack gap="xs">
@@ -100,7 +131,15 @@ export function HelpModal({ opened, onClose }: HelpModalProps) {
 
 
         <Text size="xs" c="dimmed" mt="sm">
-          Data sourced weekly from <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">PennyCollector.com</Anchor>. Made with ❤️ by <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">Adam Teo</Anchor>.
+          Data last synced on {syncDate} from{' '}
+          <Anchor href="http://locations.pennycollector.com/" target="_blank" rel="noopener noreferrer">
+            PennyCollector.com
+          </Anchor>
+          . Made with ❤️ by{' '}
+          <Anchor href="https://ysadamt.com/" target="_blank" rel="noopener noreferrer">
+            Adam Teo
+          </Anchor>
+          .
         </Text>
       </Stack>
     </Modal>
